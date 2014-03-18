@@ -1,0 +1,111 @@
+\documentclass[a4paper,12pt]{article}
+
+\title{MY455 Week 7\\ Homework 3\\ Exploratory Factor Analysis and Confirmatory Factor Analysis}
+\author{Name of R-nerd}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+
+<<base, echo=FALSE, results=hide>>=
+options(width=40)
+suppressMessages(library(foreign))
+suppressMessages(library(xtable))
+suppressMessages(library(psych))
+suppressMessages(library(GPArotation))
+suppressMessages(library(lavaan))
+suppressMessages(library(semPlot))
+# Set the path for your ESS6_UK_values.dta converted  to Stata 2012 format
+ESS6 <- read.dta("/media/tom/New Volume/Dropbox/LSE/MY455/Week 7/ESS6_UK_values_2012.dta")
+# ESS6 <- read.dta("/home/tom/Dropbox/LSE/MY455/Week 7/ESS6_UK_values_2012.dta")
+values <- data.frame(na.omit(sapply(ESS6[,c(8,9,10,11,12)], as.numeric)))
+@
+
+\begin{enumerate}
+\item Exercise 1
+\begin{enumerate}
+
+<<>>=
+model.varimax.1 <- fa(values, nfactors = 1, residuals=TRUE, 
+                      rotate = "varimax")
+model.varimax.1
+@
+<<echo=FALSE, results=tex>>=
+xtable(model.varimax.1$residual)
+@
+
+\item First question
+\newpage
+<<>>=
+model.varimax.2 <- fa(values, nfactors = 2, residuals=TRUE, 
+                      rotate = "varimax")
+model.varimax.2
+@
+
+<<echo=FALSE, results=tex>>=
+xtable(model.varimax.2$residual)
+@
+
+\item Second question
+\newpage
+<<>>=
+model.oblimin.2 <- fa(values, nfactors = 2, residuals=TRUE, 
+                      rotate = "oblimin")
+model.oblimin.2
+@
+
+<<echo=FALSE, results=tex>>=
+xtable(model.oblimin.2$residual)
+@
+
+\item Third question
+\end{enumerate}
+
+\newpage
+\item Exercise 2
+\begin{enumerate}
+
+<<>>=
+ESS6.model <- 'universalism =~ equal + understand + nature
+               benevolence =~ care + loyal'
+ESS6.model.fit <- cfa(ESS6.model, data = values)
+summary(ESS6.model.fit)
+@
+
+<<echo=FALSE, fig=TRUE>>=
+semPaths(ESS6.model.fit, title = TRUE, curvePivot = TRUE)
+@
+
+
+\item First question
+\newpage
+<<>>=
+ESS6.model.varfix.fit <- cfa(ESS6.model, data = values, std.lv = TRUE)
+summary(ESS6.model.varfix.fit)
+@
+
+<<echo=FALSE>>=
+# This model looks more illuminating and in theory should produce the same result but for some reason it gives error.
+# ESS6.model.varfix <- 'universalism =~ equal + understand + nature
+#                       benevolence =~ care + loyal
+#                       universalism ~~ 1*universalism
+#                       benevolence ~~ 1*benevolence'
+# ESS6.model.varfix.fit <- cfa(ESS6.model.varfix, data = values)
+@
+
+\item Second question
+\newpage
+<<>>=
+ESS6.model.meacon <- 'universalism =~ v1*equal + understand + v1*nature
+                      benevolence =~ care + loyal'
+ESS6.model.meacon.fit <- cfa(ESS6.model.meacon, data = values, std.lv = TRUE)
+summary(ESS6.model.meacon.fit)
+@
+
+\item Third question
+\end{enumerate}
+
+\end{enumerate}
+
+\end{document}
