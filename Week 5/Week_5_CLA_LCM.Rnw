@@ -1,0 +1,110 @@
+\documentclass[a4paper,12pt]{article}
+
+\title{MY455 Week 5\\ Homework 2\\ Hierarchichal Cluster Analysis and Latent Class Models}
+\author{Name of R-nerd}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+
+<<base, echo=FALSE, results=hide>>=
+options(width=40)
+suppressMessages(library(foreign))
+suppressMessages(library(xtable))
+suppressMessages(library(plyr))
+suppressMessages(library(poLCA))
+# eastwest <- read.dta("/media/tom/New Volume/Dropbox/LSE/MY455/Week 5/IIAG_eastwest_CLA_2012.dta")
+eastwest <- read.dta("~/Dropbox/LSE/MY455/Week 5/IIAG_eastwest_CLA_2012.dta")
+@
+
+\begin{enumerate}
+\item Exercise 1
+
+<<>>=
+d <- dist(eastwest[,c(9,10,11,12,13,14)], method="euclidean")
+fit <- hclust(d, "average")
+fit2 <- hclust(d, "ward")
+@
+
+<<fig=TRUE, echo=FALSE>>=
+plot(fit, labels = eastwest$country, main = "Average Linkage", xlabel = "Country")
+@
+
+<<fig=TRUE, echo=FALSE>>=
+plot(fit2, labels = eastwest$country, main = "Ward's Linkage", xlabel = "Country")
+groups <- cutree(fit2, k=3)
+rect.hclust(fit2, k=3, border="red")
+@
+\begin{enumerate}
+\item
+First question
+
+<<>>=
+names(groups) <- eastwest$country
+cluster1 <- eastwest[eastwest$country %in% 
+                    names(groups[groups == 1]),c(9,10,11,12,13,14)]
+stats1 <- sapply(cluster1, each(min, max, mean, sd, var))
+@
+
+<<>>=
+names(groups) <- eastwest$country
+cluster2 <- eastwest[eastwest$country %in% 
+                    names(groups[groups == 2]),c(9,10,11,12,13,14)]
+stats2 <- sapply(cluster2, each(min, max, mean, sd, var))
+@
+
+<<>>=
+names(groups) <- eastwest$country
+cluster3 <- eastwest[eastwest$country %in% 
+                    names(groups[groups == 3]),c(9,10,11,12,13,14)]
+stats3 <- sapply(cluster3, each(min, max, mean, sd, var))
+@
+\newpage
+<<echo=FALSE, results=tex>>=
+  xtable(stats1, dec = 3, , caption = "First Cluster Summary",
+  center = "centering", file = "", floating = TRUE)
+@
+<<echo=FALSE, results=tex>>=
+  xtable(stats2, dec = 3, , caption = "Second Cluster Summary",
+  center = "centering", file = "", floating = TRUE)
+@
+<<echo=FALSE, results=tex>>=
+  xtable(stats3, dec = 3, , caption = "Third Cluster Summary",
+  center = "centering", file = "", floating = TRUE)
+@
+\item
+Second question
+
+\item
+Third question
+
+\end{enumerate}
+
+<<>>=
+job <- read.csv("~/Dropbox/LSE/MY455/Week 5/EVS_job_LCM.csv")
+job <- job[,2:7]
+for (i in 1:6) {
+  job[,i] <- as.factor(job[,i])
+  levels(job[,i]) <- c("not mentioned", "mentioned")
+}
+names(job) <- c('pay','people','security','achieve','interest','equal') 
+
+f <- cbind(pay, people, security, achieve, interest, equal) ~ 1
+lca2 <- poLCA(f, job, nclass=2)
+lca3 <- poLCA(f, job, nclass=3)
+@
+
+<<echo=FALSE>>=
+m <- matrix(c("Pay not mentioned", "Pay mentioned", "People not mentioned", "People mentioned", "Security not mentioned", "Security mentioned", "Achieve not mentioned", "Achieve mentioned", "Interest not mentioned", "Interest mentioned", "Equal not mentioned", "Equal mentioned"), nrow=12, ncol=1)
+colnames(m) <- c("Variable")
+@
+
+<<echo=FALSE, results=tex>>=
+xtable(cbind(m, round(rbind(t(lca3$probs$pay), t(lca3$probs$people), t(lca3$probs$security), t(lca3$probs$achieve), t(lca3$probs$interest), t(lca3$probs$equal)), digits=2)), dec = 3, caption = "Summary of item response probabilities", center = "centering", file = "")
+@
+\item
+Exercise 2
+\end{enumerate}
+
+\end{document}
