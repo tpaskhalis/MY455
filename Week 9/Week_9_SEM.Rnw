@@ -1,0 +1,74 @@
+\documentclass[a4paper,12pt]{article}
+
+\title{MY455 Week 9\\ Homework 4\\ Structural Equation Models}
+\author{Name of R-nerd}
+
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+
+\maketitle
+
+<<base, echo=FALSE, results=hide>>=
+options(width=40)
+suppressMessages(library(foreign))
+suppressMessages(library(xtable))
+suppressMessages(library(lavaan))
+suppressMessages(library(semPlot))
+# Set the path for your BES_expenses.dta converted  to Stata 2012 format
+BES.expenses <- read.dta("/media/tom/New Volume/Dropbox/LSE/MY455/Week 9/BES_expenses_2012.dta")
+BES.finances<- read.dta("/media/tom/New Volume/Dropbox/LSE/MY455/Week 9/BES_financial_2012.dta")
+# BES.expenses <- read.dta("~/Dropbox/LSE/MY455/Week 9/BES_expenses_2012.dta")
+# BES.finances <- read.dta("~/Dropbox/LSE/MY455/Week 9/BES_financial_2012.dta")
+expenses <- data.frame(na.omit(sapply(BES.expenses[,c(2,3,4,5,6,7,8)], as.numeric)))
+finances <- data.frame(na.omit(sapply(BES.finances, as.numeric)))
+@
+
+\begin{enumerate}
+
+<<>>=
+BES.model <- 'scandal =~ corrupt + angry + unimport + rules
+              scandal ~ labour + tory'
+BES.model.fit <- sem(BES.model, data = expenses, std.lv = TRUE)
+summary(BES.model.fit)
+@
+
+<<echo=FALSE, fig=TRUE>>=
+semPaths(BES.model.fit, title = TRUE, curvePivot = TRUE)
+@
+
+\newpage
+<<>>=
+BES.model.elab <- 'care =~ angry + unimport
+                   behave =~ corrupt + rules 
+                   care ~ labour + tory
+                   behave ~ labour + tory
+                   care ~~ behave'
+BES.model.elab.fit <- sem(BES.model.elab, data = expenses, std.lv = TRUE)
+summary(BES.model.elab.fit)
+@
+
+<<echo=FALSE, fig=TRUE>>=
+semPaths(BES.model.elab.fit, title = TRUE, curvePivot = TRUE)
+@
+
+
+\item First question
+\newpage
+<<>>=
+BES.model.recurse <- 'ec1 =~ econ1 + finance1
+                      ec2 =~ econ2 + finance2
+                      brown =~ compet + trust
+                      ec1 ~ brown
+                      ec2 ~ brown + ec1'
+BES.model.recurse.fit <- sem(BES.model.recurse, data = finances, std.lv = TRUE)
+summary(BES.model.recurse.fit)
+@
+
+<<echo=FALSE, fig=TRUE>>=
+semPaths(BES.model.recurse.fit, title = TRUE, curvePivot = TRUE)
+@
+
+\item Second question
+\end{enumerate}
+
+\end{document}
