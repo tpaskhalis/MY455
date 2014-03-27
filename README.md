@@ -1,4 +1,4 @@
 MY455
 =====
 
-Here you can find R scripts for MY455 assignments. 
+R scripts and Sweave(.Rnw) files for the MY455 'Multivariate Analysis and Measurement' assignments. 
